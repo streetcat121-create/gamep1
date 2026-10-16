@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements.Experimental;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -9,20 +10,19 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public Transform visual;
     private Vector2 moveInput;
-
     public Vector3 startPosition;
-
     public float jumpPower = 8f;
     private Rigidbody2D rb;
-
     private bool isGrounded = false;
-    
+    public TMP_Text livesText;
+    public string nextSceneName = "Ending";
+
+
     void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
-
         }
     }
 
@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
             isGrounded = false;
         }
     }
+   
     public Vector2 airScale = new Vector2(0.8f, 1.2f);
     private float facing = 1f;
 
@@ -41,16 +42,12 @@ public class PlayerController : MonoBehaviour
         moveInput = value.Get<Vector2>();
         if (moveInput.x > 0) { facing = 1f; }
 
-
-
-        else if (moveInput.x < 0) { facing = 1f; }
+        else if (moveInput.x < 0) { facing = -1f; }
         
-
     }
 
     void Start()
     {
-
 
         if (hp >= 70)
         {
@@ -67,11 +64,9 @@ public class PlayerController : MonoBehaviour
     
     rb = GetComponent<Rigidbody2D>();
             transform.position = startPosition;
+        
+        livesText.text = "LIFE " + lives;
 
-        Debug.Log(playerName + " 시작. 체력 " + hp);
-        Debug.Log("피격 후 체력 " + (hp - 30));
-        Debug.Log("달리기 속도 " + moveSpeed * 2);
-        Debug.Log("10 / 4 = " + 10 / 4);
     }
     void OnJump(InputValue value)
     {
@@ -87,8 +82,8 @@ public class PlayerController : MonoBehaviour
     private bool isGameOver = false;
 
 
-
     public float fallLimit = -10f;
+   
     void Update()
     {
             if (!isGameOver)
@@ -97,17 +92,9 @@ public class PlayerController : MonoBehaviour
                 * moveSpeed * Time.deltaTime);
             }
 
-                       if (transform.position.y < fallLimit)
+            if (transform.position.y < fallLimit)
             {
-                lives -= 1;
-                transform.position = startPosition;
-                rb.linearVelocity = Vector2.zero;
-                Debug.Log("낙사. 남은 목숨 " + lives);
-                if (lives <= 0)
-                {
-                    isGameOver = true;
-                    Debug.Log("게임 오버");
-                }
+                LoseLife();
             }
 
 
@@ -123,5 +110,33 @@ public class PlayerController : MonoBehaviour
 
 
     }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Goal"))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
 
+        if (other.CompareTag("Trap"))
+        {
+            LoseLife();
+        }
+
+    }
+    public GameObject gameOverPanel;
+
+    void LoseLife()
+    {
+         lives -= 1;
+        transform.position = startPosition;
+        rb.linearVelocity = Vector2.zero;
+        livesText.text = "LIFE " + lives;
+        if (lives <= 0)
+        {
+
+            isGameOver = true;
+            gameOverPanel.SetActive(true);
+
+        }
+    }
 }
