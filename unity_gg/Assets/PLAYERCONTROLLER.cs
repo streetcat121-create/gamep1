@@ -66,9 +66,11 @@ public class PlayerController : MonoBehaviour
             transform.position = startPosition;
         
         livesText.text = "LIFE " + lives;
+    
+    
 
     }
-    void OnJump(InputValue value)
+       void OnJump(InputValue value)
     {
         if (value.isPressed && isGrounded && !isGameOver)
         {
